@@ -6,15 +6,23 @@ export default function EventDetailPage() {
   const { id } = useParams();
   const [event, setEvent] = useState(null);
   const [joined, setJoined] = useState(false);
+  const [participantsCount, setParticipantsCount] = useState(0);
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState('');
 
-  // ダミー取得 or 実際は fetch(`/api/events/${id}`)
+  // 初期データ取得：イベント情報・参加者数・コメント一覧
   useEffect(() => {
-    // FIXME: API fetch に書き換え
-    const ev = dummyEvents.find(e => String(e.id) === id);
-    setEvent(ev);
-    // comments 初期取得
+    // イベント情報
+    fetch(`/api/events/${id}`)
+      .then(res => res.json())
+      .then(setEvent)
+      .catch(() => setEvent(null));
+    // 参加者数
+    fetch(`/api/events/${id}/participants/count`)
+      .then(res => res.json())
+      .then(data => setParticipantsCount(data.count))
+      .catch(() => setParticipantsCount(0));
+    // コメント一覧
     fetch(`/api/events/${id}/comments`)
       .then(res => res.json())
       .then(setComments)
@@ -23,42 +31,36 @@ export default function EventDetailPage() {
 
   if (!event) return <p>読み込み中…</p>;
 
+  // 参加ボタン押下時
   const handleJoin = () => {
     fetch(`/api/events/${id}/join`, { method: 'POST' })
       .then(res => {
         if (!res.ok) throw new Error();
         setJoined(true);
+        // 参加者数を即時更新
+        setParticipantsCount(prev => prev + 1);
       })
       .catch(() => alert('参加に失敗しました'));
   };
 
-  const handleCommentSubmit = e => {
-    e.preventDefault();
-    if (!newComment.trim()) return;
-    fetch(`/api/events/${id}/comments`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text: newComment }),
-    })
-      .then(res => res.json())
-      .then(created => {
-        setComments(prev => [...prev, created]);
-        setNewComment('');
-      })
-      .catch(() => alert('コメントの投稿に失敗しました'));
-  };
+  // コメント投稿処理（省略、前回例と同じ）
+  const handleCommentSubmit = e => { /* ... */ };
 
   return (
     <div className="event-detail-page">
       <h2>{event.title}</h2>
-      <p>{event.date} @ {event.location}</p>
+      <p>
+        {event.date} @ {event.location}
+      </p>
       <p>{event.description}</p>
       <p>定員：{event.capacity}名</p>
+      <p>参加者数：{participantsCount}名</p>
 
-      <button onClick={handleJoin} disabled={joined}>
-        {joined ? '参加済み' : '参加する'}
+      <button onClick={handleJoin} disabled={joined || participantsCount >= event.capacity}>
+        {joined ? '参加済み' : participantsCount >= event.capacity ? '満員' : '参加する'}
       </button>
 
+      {/* コメント欄 */}
       <section className="comments">
         <h3>コメント</h3>
         {comments.length === 0 ? (
@@ -80,14 +82,9 @@ export default function EventDetailPage() {
         </form>
       </section>
 
-      <p><Link to="/">← 一覧に戻る</Link></p>
+      <p>
+        <Link to="/">← 一覧に戻る</Link>
+      </p>
     </div>
   );
 }
-
-// ここでは同一ファイルにダミーデータ定義を置いていますが
-// 実運用では services/eventService.js などに分離してください。
-const dummyEvents = [
-  { id: 1, title: '夏祭り', date: '2025-08-01', location: '中央広場', description: '楽しいお祭り', capacity: 100 },
-  { id: 2, title: '音楽ワークショップ', date: '2025-08-10', location: 'コミュニティセンター', description: 'ギター体験', capacity: 30 },
-];

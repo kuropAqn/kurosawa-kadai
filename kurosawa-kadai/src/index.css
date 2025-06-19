@@ -62,3 +62,22 @@ label {
   flex-direction: column;
   gap: 0.5rem;
 }
+
+.event-list-page .filters {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+.event-list-page .filters input,
+.event-list-page .filters select {
+  padding: 0.5rem;
+  font-size: 1rem;
+}
+
+.event-list-page .event-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 1rem;
+}
