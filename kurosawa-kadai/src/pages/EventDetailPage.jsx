@@ -37,21 +37,36 @@ export default function EventDetailPage() {
       .then(res => {
         if (!res.ok) throw new Error();
         setJoined(true);
-        // 参加者数を即時更新
         setParticipantsCount(prev => prev + 1);
       })
       .catch(() => alert('参加に失敗しました'));
   };
 
-  // コメント投稿処理（省略、前回例と同じ）
-  const handleCommentSubmit = e => { /* ... */ };
+  // コメント投稿処理
+  const handleCommentSubmit = e => {
+    e.preventDefault();                           // ページリロードを止める
+    if (!newComment.trim()) return;               // 空投稿を防止
+
+    fetch(`/api/events/${id}/comments`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text: newComment }),
+    })
+      .then(res => {
+        if (!res.ok) throw new Error();
+        return res.json();
+      })
+      .then(created => {
+        setComments(prev => [...prev, created]);  // ローカル state を更新
+        setNewComment('');                        // テキストエリアをクリア
+      })
+      .catch(() => alert('コメントの投稿に失敗しました'));
+  };
 
   return (
     <div className="event-detail-page">
       <h2>{event.title}</h2>
-      <p>
-        {event.date} @ {event.location}
-      </p>
+      <p>{event.date} @ {event.location}</p>
       <p>{event.description}</p>
       <p>定員：{event.capacity}名</p>
       <p>参加者数：{participantsCount}名</p>
@@ -72,7 +87,7 @@ export default function EventDetailPage() {
             ))}
           </ul>
         )}
-        <form onSubmit={handleCommentSubmit}>
+        <form onSubmit={handleCommentSubmit} noValidate>
           <textarea
             value={newComment}
             onChange={e => setNewComment(e.target.value)}
@@ -82,9 +97,7 @@ export default function EventDetailPage() {
         </form>
       </section>
 
-      <p>
-        <Link to="/">← 一覧に戻る</Link>
-      </p>
+      <p><Link to="/">← 一覧に戻る</Link></p>
     </div>
   );
 }
