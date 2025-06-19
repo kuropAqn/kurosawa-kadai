@@ -21,13 +21,12 @@ React を用いたフロントエンドと Express.js ベースのバックエ�
 - **言語・ランタイム**  
   - Node.js v18.x 以上  
 - **フロントエンド**  
-  - React v18.x (create-react-app)  
+  - React v18.x
   - react-router-dom v6  
   - Fetch API  
 - **バックエンド**  
   - Express.js v4.x  
   - CORS
-  - express.static 
 - **ビルド・ツール**  
   - npm / yarn  
 - **デプロイ**  
