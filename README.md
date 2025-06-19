@@ -26,14 +26,12 @@ React を用いたフロントエンドと Express.js ベースのバックエ�
   - Fetch API  
 - **バックエンド**  
   - Express.js v4.x  
-  - CORS ミドルウェア (`cors`)  
-  - 静的ファイル配信 (`express.static`)  
+  - CORS
+  - express.static 
 - **ビルド・ツール**  
   - npm / yarn  
 - **デプロイ**  
-  - Apache HTTPD (リバースプロキシ利用可)  
-- **その他**  
-  - JSON ファイル永続化（`fs` モジュールによるコメント保存）  
+  - Apache HTTPD 
 
 ---
 
@@ -53,22 +51,18 @@ React を用いたフロントエンドと Express.js ベースのバックエ�
    - 詳細ページでコメント一覧表示  
    - テキスト投稿（POST）→ページ遷移不要の即時反映  
    - サーバーサイドで `data/comments.json` に永続化  
-5. **永続化**  
-   - コメントは JSON ファイルへ保存  
-   - サーバー再起動後もデータを保持  
 
 ---
 
 ## 動作環境
 
 - **サーバー**  
-  - OS：Amazon Linux 2 (EC2 t2.micro 推奨)  
+  - OS：Amazon Linux 2 (EC2 t3.micro)  
   - Node.js：v18.x 以上  
   - Apache HTTPD：2.4.x  
 - **開発PC**  
-  - OS：Windows 10 / macOS / Linux  
-  - Node.js：v18.x 以上  
-  - VSCode 等のエディタ  
+  - OS：Windows 10  
+  - VSCode
 
 ---
 
@@ -78,7 +72,101 @@ React を用いたフロントエンドと Express.js ベースのバックエ�
 
 ### 1. リポジトリをクローン・更新
 
-```bash
+bash
 cd ~
 git clone https://github.com/your-account/kurosawa-kadai.git
 cd kurosawa-kadai
+既にクローン済みの場合は：
+
+bash
+コピーする
+編集する
+cd ~/kurosawa-kadai
+git pull origin main
+2. フロントエンド依存インストール
+bash
+コピーする
+編集する
+# プロジェクトルート
+npm install        # または yarn install
+3. React アプリのビルド
+bash
+コピーする
+編集する
+npm run build      # または yarn build
+build/ フォルダが生成されます。
+
+4. バックエンド依存インストール
+bash
+コピーする
+編集する
+cd server
+npm install
+5. 永続化用フォルダ・ファイル作成
+bash
+コピーする
+編集する
+cd ~/kurosawa-kadai/server
+mkdir -p data
+echo "{}" > data/comments.json
+6. サーバー起動
+bash
+コピーする
+編集する
+# バックエンドと静的配信を同時に行う
+cd ~/kurosawa-kadai/server
+npm start
+デフォルト：http://localhost:3001/ でアクセス可
+
+別端末からは curl -I http://localhost:3001/api/events 等で確認
+
+7. リバースプロキシ（任意）
+Apache を使う場合は、/etc/httpd/conf.d/api-proxy.conf に以下を追加し再起動してください。
+
+apache
+コピーする
+編集する
+ProxyPass        /api/ http://127.0.0.1:3001/api/
+ProxyPassReverse /api/ http://127.0.0.1:3001/api/
+bash
+コピーする
+編集する
+sudo systemctl restart httpd
+利用方法（マニュアル）
+アプリにアクセス
+
+ブラウザで http://<EC2のパブリックIP>:3001/ または Apache 経由で http://<IP>/
+
+イベント一覧の絞り込み
+
+上部フォームでキーワード／日付／カテゴリを指定
+
+イベント詳細の閲覧
+
+カードをクリック → 詳細ページへ遷移
+
+イベント参加
+
+「参加する」ボタンをクリック
+
+コメント投稿
+
+コメント欄に入力 → 「投稿」をクリック
+
+ページ遷移せずに即時追加
+
+新規イベント作成
+
+ヘッダの「新規作成」リンクをクリック
+
+入力後「作成する」を押すと一覧へリダイレクト
+
+API エンドポイント
+メソッド	パス	説明
+GET	/api/events	全イベント取得
+GET	/api/events/:id	イベント詳細取得
+GET	/api/events/:id/participants/count	参加者数取得
+POST	/api/events/:id/join	参加登録
+GET	/api/events/:id/comments	コメント一覧取得
+POST	/api/events/:id/comments	コメント投稿
+
