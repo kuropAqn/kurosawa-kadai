@@ -74,7 +74,7 @@ React を用いたフロントエンドと Express.js ベースのバックエ�
 
 bash
 cd ~
-git clone https://github.com/your-account/kurosawa-kadai.git
+git clone https://github.com/kuropAqn/kurosawa-kadai.git
 cd kurosawa-kadai
 既にクローン済みの場合は：
 
@@ -120,18 +120,6 @@ npm start
 
 別端末からは curl -I http://localhost:3001/api/events 等で確認
 
-7. リバースプロキシ（任意）
-Apache を使う場合は、/etc/httpd/conf.d/api-proxy.conf に以下を追加し再起動してください。
-
-apache
-コピーする
-編集する
-ProxyPass        /api/ http://127.0.0.1:3001/api/
-ProxyPassReverse /api/ http://127.0.0.1:3001/api/
-bash
-コピーする
-編集する
-sudo systemctl restart httpd
 利用方法（マニュアル）
 アプリにアクセス
 
